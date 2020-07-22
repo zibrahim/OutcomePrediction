@@ -13,6 +13,7 @@
 		"filename": "/Users/babylon/Documents/Data/KCHData/ClusteredTimeSeries/TimeSeriesAggregatedClusteredDeltaTwoDays.csv",
 		"grouping": "PatientID",
 		"ordering": "Hour",
+
 		"static_columns": [
 			"NEWSBaseline",
 			"CReactiveProteinBaseline",
@@ -84,7 +85,7 @@
 		"normalise": true
 	},
 	"training": {
-		"epochs": 2,
+		"epochs": 3,
 		"batch_size": 24
 	},
 	"model": {
@@ -97,8 +98,8 @@
 			{
 				"type": "lstm",
 				"neurons": 100,
-				"input_timesteps": 24,
-				"input_dim": 35,
+				"input_timesteps": -1,
+				"input_dim": -1,
 				"return_seq": true
 			},
 			{
@@ -121,7 +122,6 @@
 			},
 			{
 				"type": "dense",
-				"neurons": 24,
 				"activation": "linear"
 			}
 		]
