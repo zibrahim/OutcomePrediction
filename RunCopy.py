@@ -57,6 +57,11 @@ def main():
                 stratified_group_k_fold(X, y, groups, k=10)) :  # CROSS-VALIDATION
             training_groups, testing_groups = groups[training_ind], groups[testing_ind]
             this_y_train, this_y_val = y[training_ind], y[testing_ind]
+            #ungrouped_y_train = time_series[[grouping, outcome]]
+            #ungrouped_y_train = ungrouped_y_train[training_ind]
+            #grouped_y_train = ungrouped_y_train.groupby(grouping).first()
+
+            #ungrouped_y_val = [grouping, this_y_val]
             this_X_train, this_X_val = X.iloc[training_ind], X.iloc[testing_ind]
             y_with_ids = time_series[[grouping, outcome]]
             y_with_ids = y_with_ids [y_with_ids[grouping].isin(testing_groups)]
@@ -81,13 +86,18 @@ def main():
             y_pred_val = model.predict((this_X_val.values).reshape(-1,24,35))
             y_pred_val_binary = (y_pred_val > 0.5).astype('int32')
 
+            x = y_pred_val.reshape(-1,24,1)
+            print(" NEW X SHAPE: ", x.shape)
             #print(" predictions")
             print("Predicted: ", np.unique(y_pred_val_binary), len(y_pred_val_binary), y_pred_val_binary.shape)
             #print(" All validation ", np.unique(this_y_val), len(this_y_val), this_y_val.shape)
             #print("Validation for the subset: ", np.unique(y_true), len(y_true), y_true.shape)
 
 
-            print(" ROC AUC: ", roc_auc_score(y_true, y_pred_val_binary))
+            print(" DOING ROC FOR Y TRU AND Y PREDICTE")
+            print(" Y True: ", y_true.shape)
+            print(" Y predicted: ", y_pred_val_binary.shape)
+            print(" ROC AUC: ", roc_auc_score(y_true, y_pred_val_binary[:,20]))
 
             #plot_results(y_pred_val_binary, this_y_val)
 if __name__ == '__main__':

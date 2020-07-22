@@ -2,9 +2,11 @@ import os
 import math
 import numpy as np
 import datetime as dt
+
+from keras import Input
 from numpy import newaxis
 from Utils.GeneralUtils import Timer
-from keras.layers import Dense, Activation, Dropout, LSTM
+from keras.layers import Dense, Activation, Dropout, LSTM, TimeDistributed, Masking
 from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
@@ -64,6 +66,8 @@ class Model() :
             if layer['type'] == 'dropout' :
                 self.model.add(Dropout(dropout_rate))
 
+        self.model.add(Activation('softmax'))
+        self.model.add(Dense(1))
         self.model.compile(loss=configs['model']['loss'], optimizer=configs['model']['optimizer'])
 
         print('[Model] Model Compiled')

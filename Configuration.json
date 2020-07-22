@@ -85,7 +85,7 @@
 		"normalise": true
 	},
 	"training": {
-		"epochs": 3,
+		"epochs": 100,
 		"batch_size": 24
 	},
 	"model": {
@@ -122,7 +122,7 @@
 			},
 			{
 				"type": "dense",
-				"activation": "linear"
+				"activation": "softmax"
 			}
 		]
 	}

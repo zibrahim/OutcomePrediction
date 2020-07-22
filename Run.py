@@ -10,6 +10,8 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from Utils.ModelUtils import scale, stratified_group_k_fold
 from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import MinMaxScaler
+
 
 def plot_results(predicted_data, true_data):
     fig = plt.figure(facecolor='white')
@@ -39,9 +41,14 @@ def main():
     imp = IterativeImputer(max_iter=10, random_state=0)
     imp.fit(time_series[dynamic_features])
     time_series[dynamic_features] = imp.transform(time_series[dynamic_features])
-    time_series = scale(time_series, dynamic_features)
 
-    X = time_series[dynamic_features]
+    scaler = MinMaxScaler()
+    normalized_timeseries = pd.DataFrame(scaler.fit_transform(time_series[dynamic_features]))
+    normalized_timeseries.columns = dynamic_features
+
+    normalized_timeseries.to_csv("TimeSeriesScaled.csv", index=False)
+
+    X = normalized_timeseries[dynamic_features]
     groups = np.array(time_series[grouping])
 
     for outcome in configs['data']['classification_outcome']:
@@ -64,35 +71,53 @@ def main():
             #ungrouped_y_val = [grouping, this_y_val]
             this_X_train, this_X_val = X.iloc[training_ind], X.iloc[testing_ind]
             y_with_ids = time_series[[grouping, outcome]]
-            y_with_ids = y_with_ids [y_with_ids[grouping].isin(testing_groups)]
-            y_with_ids = y_with_ids.groupby(grouping).first()
-            y_true = y_with_ids[outcome]
-            y_true = y_true.astype(int)
+            #y_with_ids = y_with_ids [y_with_ids[grouping].isin(testing_groups)]
+            #y_with_ids = y_with_ids.groupby(grouping).first()
+            #y_true = y_with_ids[outcome]
+            #y_true = y_true.astype(int)
+
+            y_with_ids_training = y_with_ids [y_with_ids[grouping].isin(training_groups)]
+            y_with_ids_training = y_with_ids_training.groupby(grouping).first()
+            y_with_ids_training = y_with_ids_training[outcome]
+            this_y_train = y_with_ids_training.astype(int)
+
+            y_with_ids_testing = y_with_ids [y_with_ids[grouping].isin(testing_groups)]
+            y_with_ids_testing = y_with_ids_testing.groupby(grouping).first()
+            y_with_ids_testing = y_with_ids_testing[outcome]
+            this_y_val = y_with_ids_testing.astype(int)
 
             assert len(set(training_groups) & set(testing_groups)) == 0
 
             #(NumberOfExamples, TimeSteps, FeaturesPerStep).
+
+            print(" RESHAPING Y: ",((this_y_train.values).reshape(-1,1)).shape)
             model.train(
                 (this_X_train.values).reshape(-1, 24, 35),
-                (this_y_train.values).reshape(-1,24),
+                (this_y_train.values).reshape(-1,1),
                 epochs=configs['training']['epochs'],
                 batch_size=configs['training']['batch_size'],
                 save_dir=configs['model']['save_dir']
             )
 
             this_X_val.reset_index()
-            #predictions = model.predict_sequences_multiple(this_X_val, configs['data']['sequence_length'],
-                                                           #24)
+
             y_pred_val = model.predict((this_X_val.values).reshape(-1,24,35))
+            print("PREDICTIONS PRINTING OUTTT!!!! for: values: ", set(this_y_val))
+            print(y_pred_val)
             y_pred_val_binary = (y_pred_val > 0.5).astype('int32')
 
-            #print(" predictions")
-            print("Predicted: ", np.unique(y_pred_val_binary), len(y_pred_val_binary), y_pred_val_binary.shape)
+            #x = y_pred_val.reshape(-1,24,1)
+            #print(" NEW X SHAPE: ", x.shape)
+            ##print(" predictions")
+            #print("Predicted: ", np.unique(y_pred_val_binary), len(y_pred_val_binary), y_pred_val_binary.shape)
             #print(" All validation ", np.unique(this_y_val), len(this_y_val), this_y_val.shape)
             #print("Validation for the subset: ", np.unique(y_true), len(y_true), y_true.shape)
 
 
-            print(" ROC AUC: ", roc_auc_score(y_true, y_pred_val_binary[20]))
+           # print(" DOING ROC FOR Y TRU AND Y PREDICTE")
+            #print(" Y True: ", y_true.shape)
+            #print(" Y predicted: ", y_pred_val_binary.shape)
+            #print(" ROC AUC: ", roc_auc_score(y_true, y_pred_val_binary[:,20]))
 
             #plot_results(y_pred_val_binary, this_y_val)
 if __name__ == '__main__':
