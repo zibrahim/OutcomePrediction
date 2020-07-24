@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from Models.LSTM.Model import Model
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
-from Utils.ModelUtils import scale, stratified_group_k_fold
+from Utils.Model import scale, stratified_group_k_fold
 from sklearn.metrics import roc_auc_score
 
 def plot_results(predicted_data, true_data):

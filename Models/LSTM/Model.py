@@ -5,7 +5,7 @@ import datetime as dt
 
 from keras import Input
 from numpy import newaxis
-from Utils.GeneralUtils import Timer
+from Utils.General import Timer
 from keras.layers import Dense, Activation, Dropout, LSTM, TimeDistributed, Masking
 from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -56,8 +56,6 @@ class Model() :
             else:
                 input_timesteps = layer['input_timesteps'] if 'input_timesteps' in layer else None
                 input_dim = layer['input_dim'] if 'input_dim' in layer else None
-
-            print("INPUT TIME STEPS ARE: ", input_timesteps, "time steps and FEATURES ARE: ", input_dim)
 
             if layer['type'] == 'dense' :
                 self.model.add(Dense(neurons, activation=activation))

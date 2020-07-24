@@ -6,18 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from Models.LSTM.Model import Model
-from Utils.ModelUtils import scale, stratified_group_k_fold, generate_trajectory_timeseries, impute
+from Utils.Model import scale, stratified_group_k_fold, generate_trajectory_timeseries, impute
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
-
-
-def plot_results(predicted_data, true_data):
-    fig = plt.figure(facecolor='white')
-    ax = fig.add_subplot(111)
-    ax.plot(true_data, label='True Data')
-    plt.plot(predicted_data, label='Prediction')
-    plt.legend()
-    plt.show()
-    fig.savefig("foo.pdf", bbox_inches='tight')
 
 
 def main():
@@ -48,15 +38,16 @@ def main():
 
     groups = np.array(time_series[grouping])
     X = normalized_timeseries[dynamic_features]
-    X.to_csv("X.csv")
+
+    ##6. Training/Prediction for all outcomes.
     for outcome in configs['data']['classification_outcome']:
 
+        number_of_features = configs['data']['sequence_length']
+        batch_size = configs['training']['batch_size']
+
         y = time_series[outcome]
-
         y = y.astype(int)
-
         model = Model(configs['model']['name'] + outcome)
-
         model.build_model(configs)
 
         for ffold_ind, (training_ind, testing_ind) in enumerate(
@@ -82,16 +73,16 @@ def main():
             #(NumberOfExamples, TimeSteps, FeaturesPerStep).
 
             model.train(
-                (this_X_train.values).reshape(-1, 24, 14),
+                (this_X_train.values).reshape(-1, batch_size, number_of_features),
                 (this_y_train.values).reshape(-1,1),
                 epochs=configs['training']['epochs'],
-                batch_size=configs['training']['batch_size'],
+                batch_size=batch_size,
                 save_dir=configs['model']['save_dir']
             )
 
             this_X_val.reset_index()
 
-            y_pred_val = model.predict((this_X_val.values).reshape(-1,24,14))
+            y_pred_val = model.predict((this_X_val.values).reshape(-1,batch_size,number_of_features))
             y_pred_val_binary = (y_pred_val > 0.5).astype('int32')
 
             print(" ROC AUC: ", roc_auc_score(this_y_val, y_pred_val))
