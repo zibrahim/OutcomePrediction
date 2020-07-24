@@ -15,83 +15,58 @@
 		"ordering": "Hour",
 
 		"static_columns": [
-			"NEWSBaseline",
-			"CReactiveProteinBaseline",
-			"SysBPBaseline",
-            "DiasBPBaseline",
-            "WBCBaseline",
-             "LymphocytesBaseline",
-             "NeutrophilsBaseline",
-             "PLTBaseline",
-             "UreaBaseline",
-			"CreatinineBaseline",
-			 "HbBaseline",
-			"AlbuminBaseline",
              "Age",
              "SxToAdmit",
-			"NumComorbidities",
+			 "NumComorbidities",
              "cluster_assignment"
 		],
 
 		"dynamic_columns": [
-			"ALT",
 			"Albumin",
-			"Blood Lactate",
-			"C-Reactive-Protein",
 			"Creatinine",
-			"D-Dimer",
+			"C-Reactive-Protein",
 			"DiasBP",
-			"Estimated-GFR",
-			"Ferritin",
 			"FiO2",
-			"GCSMotor",
-			"GCSVerbal",
 			"Hb",
-			"HeartRate",
-			"INR",
 			"Lymphocytes",
-			"NEWS2",
 			"Neutrophils",
-			"OxygenDelivery",
-			"OxygenLitres",
-			"OxygenSaturation",
-			"PCO2",
-			"PCV",
-			"PH",
+			"NEWS2",
 			"PLT",
-			"PO2",
 			"PO2/FIO2",
-			"PainScore",
-			"SupplementalOxygen",
 			"SysBP",
-			"Temperature",
-			"Troponin-T",
 			"Urea",
-			"WBC",
-			"cHCO3"
+			"WBC"
+		],
+		"baseline_columns": [
+					"AlbuminBaseline","CreatinineBaseline","CReactiveProteinBaseline",
+					"DiasBPBaseline", "FiO2Baseline", "HbBaseline",
+					"LymphocytesBaseline", "NeutrophilsBaseline", "NEWSBaseline",
+					"PLTBaseline", "PO2.FIO2Baseline", "SysBPBaseline",
+					 "UreaBaseline", "WBCBaseline"
 		],
 		"classification_outcome": [
-			"ITUAdmission7Days",
-			"ITUAdmission14Days",
-			"ITUAdmission30Days",
 			"Mortality7Days",
 			"Mortality14Days",
-			"Mortality30Days"
+			"Mortality30Days",
+			"ITUAdmission7Days",
+			"ITUAdmission14Days",
+			"ITUAdmission30Days"
+
 		],
 		"regression_outcome": ["PO2/FIO2"],
 
-		"sequence_length": 35,
+		"sequence_length": 14,
 		"train_test_split": 0.85,
 		"normalise": true
 	},
 	"training": {
-		"epochs": 100,
+		"epochs": 3,
 		"batch_size": 24
 	},
 	"model": {
 		"name": "lstm-binary-classifier",
 		"loss": "binary_crossentropy",
-		"optimizer": "rmsprop",
+		"optimizer": "adam",
 		"metrics": ["accuracy"],
 		"save_dir": "/Users/babylon/Documents/Data/KCHData/Models/LSTM",
 		"layers": [
@@ -122,7 +97,7 @@
 			},
 			{
 				"type": "dense",
-				"activation": "softmax"
+				"activation": "sigmoid"
 			}
 		]
 	}

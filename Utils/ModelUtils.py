@@ -1,9 +1,13 @@
 from collections import Counter, defaultdict
 import random
 import numpy as np
-import keras.backend as K
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from keras.activations import *
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.metrics import f1_score
+
+import keras.backend as K
 
 lstm_dict={}
 lstm_dict['activation'] = ['sigmoid']
@@ -76,66 +80,42 @@ def get_distribution ( y_vals ) :
     y_vals_sum = sum(y_distr.values())
     return [f'{y_distr[i] / y_vals_sum:.2%}' for i in range(np.max(y_vals) + 1)]
 
-def lstm_precision(y_true, y_pred):
- true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
- predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
- precision = true_positives / (predicted_positives + K.epsilon())
- return precision
-
-def lstm_recall(y_true, y_pred):
- true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
- possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
- recall = true_positives / (possible_positives + K.epsilon())
- return recall
-
-def lstm_matthews(y_true, y_pred):
- y_pred_pos = K.round(K.clip(y_pred, 0, 1))
- y_pred_neg = 1 - y_pred_pos
- y_pos = K.round(K.clip(y_true, 0, 1))
- y_neg = 1 - y_pos
- tp = K.sum(y_pos * y_pred_pos)
- tn = K.sum(y_neg * y_pred_neg)
- fp = K.sum(y_neg * y_pred_pos)
- fn = K.sum(y_pos * y_pred_neg)
- numerator = (tp * tn - fp * fn)
- denominator = K.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
- return numerator / (denominator + K.epsilon())
-
 def generate_balanced_arrays(X_train, y_train):
  while True:
   positive = np.where(y_train==1)[0].tolist()
-  print("POSITIVE: ")
-  print(positive)
   negative = np.random.choice(np.where(y_train==0)[0].tolist(),size = len(positive), replace = False)
-  print("NEGATIVE")
-  print(negative)
-
   balance = np.concatenate((positive, negative), axis=0)
-  print(" BALANCE: ")
-
-  print("BALANCE CLASS: ", type(balance))
-  print(balance)
   np.random.shuffle(balance)
   input = X_train.iloc[balance, :]
-  #input = X_train[balance,:]
-
-  print("INPUTTT")
-  print(input)
-
-  print(" CLASS OF Y: ", type(y_train))
   target = y_train.iloc[balance]
-  print("SHAPE OF TRAIN: ", input.shape, " SHAPE OF TARGET: ", target.shape, len(target))
-  print(" COLUMN NAMES OF TRAIN: ", input.columns)
   yield input, target
 
-def scale(df, scale_columns):
-    for col in scale_columns:
-        series = df[col]
-        values = series.values
-        values = values.reshape((len(values), 1))
-        scaler = MinMaxScaler(feature_range=(0, 1))
-        scaler = scaler.fit(values)
-        normalised = scaler.transform(values)
-        df['col'] = normalised
+def generate_trajectory_timeseries(df, baseline_columns, static_columns, timeseries_columns, id_col, outcome_columns):
+    for i, j in zip(timeseries_columns, baseline_columns):
+        print(i, len(df[i]))
+        print(j, len(df[j]))
+        df[i] = df[i] - df[j]
 
-    return df
+    new_df = df[timeseries_columns]
+    new_df.insert(0, id_col, df[id_col])
+    new_df[outcome_columns] = df[outcome_columns]
+    new_df[static_columns] = df[static_columns]
+
+    new_df.to_csv("NEWDF.csv", index=False)
+    return new_df
+
+def impute(df, impute_columns):
+    imp = IterativeImputer(max_iter=10, random_state=0)
+    imp.fit(df[impute_columns])
+    df[impute_columns] = imp.transform(df[impute_columns])
+
+    print(" iN IMPUTE SHAPE: ", df[impute_columns].shape)
+    return df[impute_columns]
+
+def scale(df, scale_columns):
+
+    scaler = MinMaxScaler()
+    normalized_df = pd.DataFrame(scaler.fit_transform(df[scale_columns]))
+    normalized_df.columns = scale_columns
+
+    return normalized_df
