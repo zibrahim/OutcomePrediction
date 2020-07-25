@@ -3,9 +3,9 @@ import os
 import json
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
-from Models.LSTM.Model import Model
+from Models.LSTM.Model import LSTMModel
+from Models.XGBoost.Model import XGBoostModel
 from Utils.Model import scale, stratified_group_k_fold, generate_trajectory_timeseries, impute
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
 
@@ -42,20 +42,21 @@ def main():
     ##6. Training/Prediction for all outcomes.
     for outcome in configs['data']['classification_outcome']:
 
+        outcome_df = pd.DataFrame()
+
         number_of_features = configs['data']['sequence_length']
         batch_size = configs['training']['batch_size']
 
         y = time_series[outcome]
         y = y.astype(int)
-        model = Model(configs['model']['name'] + outcome)
+        model = LSTMModel(configs['model']['name'] + outcome)
         model.build_model(configs)
 
         for ffold_ind, (training_ind, testing_ind) in enumerate(
                 stratified_group_k_fold(X, y, groups, k=5)) :  # CROSS-VALIDATION
             training_groups, testing_groups = groups[training_ind], groups[testing_ind]
-            this_y_train, this_y_val = y[training_ind], y[testing_ind]
-
             this_X_train, this_X_val = X.iloc[training_ind], X.iloc[testing_ind]
+
             y_with_ids = time_series[[grouping, outcome]]
 
             y_with_ids_training = y_with_ids [y_with_ids[grouping].isin(training_groups)]
@@ -86,16 +87,26 @@ def main():
             y_pred_val_binary = (y_pred_val > 0.5).astype('int32')
 
             print(" ROC AUC: ", roc_auc_score(this_y_val, y_pred_val))
-            print(" F1 score Macro: ", f1_score(this_y_val, y_pred_val_binary, average='macro'))
-            print(" F1 score Micro: ", f1_score(this_y_val, y_pred_val_binary, average='micro'))
-            print(" F1 score Weighted: ", f1_score(this_y_val, y_pred_val_binary, average='weighted'))
-            print(" precision score Macro: ", precision_score(this_y_val, y_pred_val_binary, average='macro'))
-            print(" precision score Micro: ", precision_score(this_y_val, y_pred_val_binary, average='micro'))
-            print(" precision score Weighted: ", precision_score(this_y_val, y_pred_val_binary, average='weighted'))
-            print(" recall score Macro: ", recall_score(this_y_val, y_pred_val_binary, average='macro'))
-            print(" recall score Micro: ", recall_score(this_y_val, y_pred_val_binary, average='micro'))
-            print(" recall score Weighted: ", recall_score(this_y_val, y_pred_val_binary, average='weighted'))
 
-            #plot_results(y_pred_val_binary, this_y_val)
+
+            F1Micro = f1_score(this_y_val, y_pred_val_binary, average='micro')
+            F1Weighted = f1_score(this_y_val, y_pred_val_binary, average='weighted')
+            PrecisionMicro =  precision_score(this_y_val, y_pred_val_binary, average='micro')
+            PrecisionWeighted =  precision_score(this_y_val, y_pred_val_binary, average='weighted')
+            RecallMicro =  recall_score(this_y_val, y_pred_val_binary, average='micro')
+            RecallWeighted =  recall_score(this_y_val, y_pred_val_binary, average='weighted')
+
+            performance_row = {
+                "F1-Micro" :F1Micro,
+                "F1-Weighted" : F1Weighted,
+                "Precision-Micro" : PrecisionMicro,
+                "Precision-Weighted": PrecisionWeighted,
+                "Recall-Micro": RecallMicro,
+                "Recall-Weighted": RecallWeighted
+            }
+
+            outcome_df = outcome_df.append(performance_row, ignore_index=True)
+        outcome_df.to_csv(outcome+".csv")
+
 if __name__ == '__main__':
     main()

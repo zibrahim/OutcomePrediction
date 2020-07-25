@@ -31,7 +31,7 @@ lstm_running_params['n_splits'] = 10
 lstm_running_params['n_epochs'] = 1000
 lstm_running_params['patience'] = 200
 
-def stratified_group_k_fold ( X, y, groups, k, seed=None ) :
+def stratified_group_k_fold ( X, y, groups, k, seed=None) :
     labels_num = np.max(y) + 1
     y_counts_per_group = defaultdict(lambda : np.zeros(labels_num))
     y_distr = Counter()
@@ -92,8 +92,6 @@ def generate_balanced_arrays(X_train, y_train):
 
 def generate_trajectory_timeseries(df, baseline_columns, static_columns, timeseries_columns, id_col, outcome_columns):
     for i, j in zip(timeseries_columns, baseline_columns):
-        print(i, len(df[i]))
-        print(j, len(df[j]))
         df[i] = df[i] - df[j]
 
     new_df = df[timeseries_columns]

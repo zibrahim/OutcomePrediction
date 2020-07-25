@@ -16,7 +16,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 #  "FeaturesPerStep" : 35
 #}
 
-class Model() :
+class LSTMModel() :
     """A class for an building and inferencing an lstm model"""
 
     def __init__ ( self , model_name) :
@@ -25,11 +25,6 @@ class Model() :
     def load_model ( self, filepath ) :
         print('[Model] Loading model from file %s' % filepath)
         self.model = load_model(filepath)
-
-    def BuildModel (self, configs, sequence, rows, columns):
-
-        model = Sequential()
-        model.add(LSTM(sequence, return_sequences=True, input_shape=(rows, columns)))
 
     def build_model ( self, configs ) :
         timer = Timer()

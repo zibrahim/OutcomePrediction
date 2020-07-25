@@ -60,11 +60,12 @@
 		"normalise": true
 	},
 	"training": {
-		"epochs": 3,
+		"epochs": 1,
 		"batch_size": 24
 	},
 	"model": {
 		"name": "lstm-binary-classifier",
+		"xgboost_name": "xgboost-binary-classifier",
 		"loss": "binary_crossentropy",
 		"optimizer": "adam",
 		"metrics": ["accuracy"],
