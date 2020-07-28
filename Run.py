@@ -25,6 +25,7 @@ def main():
 
     ##4. generate new features based on delta from baseline
     outcome_columns = configs['data']['classification_outcome']
+    print(" OUTCOME COLUMNS: ", outcome_columns)
     baseline_features = configs['data']['baseline_columns']
     static_features = configs['data']['static_columns']
 
@@ -71,6 +72,7 @@ def main():
 
             #(NumberOfExamples, TimeSteps, FeaturesPerStep).
 
+            print(" training data length: x: ", this_X_train.shape, " Y: ", this_y_train.shape)
             model.train(
                 (this_X_train.values).reshape(-1, batch_size, number_of_features),
                 (this_y_train.values).reshape(-1,1),
@@ -86,25 +88,30 @@ def main():
 
             print(" ROC AUC: ", roc_auc_score(this_y_val, y_pred_val))
 
-
+            F1Macro = f1_score(this_y_val, y_pred_val_binary, average='macro')
             F1Micro = f1_score(this_y_val, y_pred_val_binary, average='micro')
             F1Weighted = f1_score(this_y_val, y_pred_val_binary, average='weighted')
+            PrecisionMacro =  precision_score(this_y_val, y_pred_val_binary, average='macro')
             PrecisionMicro =  precision_score(this_y_val, y_pred_val_binary, average='micro')
             PrecisionWeighted =  precision_score(this_y_val, y_pred_val_binary, average='weighted')
+            RecallMacro =  recall_score(this_y_val, y_pred_val_binary, average='macro')
             RecallMicro =  recall_score(this_y_val, y_pred_val_binary, average='micro')
             RecallWeighted =  recall_score(this_y_val, y_pred_val_binary, average='weighted')
 
             performance_row = {
+                "F1-Macro" : F1Macro,
                 "F1-Micro" :F1Micro,
                 "F1-Weighted" : F1Weighted,
+                "Precision-Macro" : PrecisionMacro,
                 "Precision-Micro" : PrecisionMicro,
                 "Precision-Weighted": PrecisionWeighted,
+                "Recall-Macro" : RecallMacro,
                 "Recall-Micro": RecallMicro,
                 "Recall-Weighted": RecallWeighted
             }
 
             outcome_df = outcome_df.append(performance_row, ignore_index=True)
-        outcome_df.to_csv(outcome+".csv")
+        outcome_df.to_csv("Outcomes/"+outcome+".csv")
 
 if __name__ == '__main__':
     main()

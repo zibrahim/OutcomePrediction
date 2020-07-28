@@ -17,8 +17,7 @@
 		"static_columns": [
              "Age",
              "SxToAdmit",
-			 "NumComorbidities",
-             "cluster_assignment"
+			 "NumComorbidities"
 		],
 
 		"dynamic_columns": [
@@ -45,9 +44,13 @@
 					 "UreaBaseline", "WBCBaseline"
 		],
 		"classification_outcome": [
+			"Mortality3Days",
+			"Mortality5Days",
 			"Mortality7Days",
 			"Mortality14Days",
 			"Mortality30Days",
+			"ITUAdmission3Days",
+			"ITUAdmission5Days",
 			"ITUAdmission7Days",
 			"ITUAdmission14Days",
 			"ITUAdmission30Days"
@@ -60,8 +63,8 @@
 		"normalise": true
 	},
 	"training": {
-		"epochs": 1,
-		"batch_size": 24
+		"epochs": 4,
+		"batch_size": 18
 	},
 	"model": {
 		"name": "lstm-binary-classifier",
