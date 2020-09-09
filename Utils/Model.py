@@ -90,6 +90,18 @@ def generate_balanced_arrays(X_train, y_train):
   target = y_train.iloc[balance]
   yield input, target
 
+def class_weights(y):
+    total = len(y)
+    neg = np.count_nonzero(y == 0)
+    pos = np.count_nonzero(y == 1)
+    weight_for_0 = (1 / neg) * (total) / 2.0
+    weight_for_1 = (1 / pos) * (total) / 2.0
+
+    class_weight = {0 : weight_for_0, 1 : weight_for_1}
+
+    return class_weight
+
+
 def generate_trajectory_timeseries(df, baseline_columns, static_columns, timeseries_columns, id_col, outcome_columns):
     for i, j in zip(timeseries_columns, baseline_columns):
         df[i] = df[i] - df[j]
