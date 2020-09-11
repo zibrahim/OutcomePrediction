@@ -62,7 +62,7 @@ def smote(target_df, target_outcome, grouping):
 
     total_df = pd.concat(frames, axis=1)
     total_df.columns  = target_columns
-    target_df[grouping] = ['p_'+str(x) for x in target_df[grouping]]
+    total_df[grouping] = ['p_'+str(x) for x in total_df[grouping]]
 
     return total_df
 
