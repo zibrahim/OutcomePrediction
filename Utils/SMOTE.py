@@ -2,17 +2,15 @@ import pandas as pd
 from kmeans_smote import KMeansSMOTE
 import numpy as np
 
-def flatten(time_series, dynamic_features, grouping, static_features, outcome_columns):
+def flatten(time_series, dynamic_features, grouping, static_features, outcome_column):
     #First, create the structure of a flat DF
     newdf = time_series
     newdf.insert(0, grouping+'2', newdf[grouping])
     aggregated_df = newdf.groupby(grouping+'2').aggregate('first')
 
     timesteps = len(newdf)/len(aggregated_df)
-
     flat_df = pd.DataFrame()
-    firstTime = True
-    for id in set(aggregated_df[grouping]):
+    for id in aggregated_df[grouping].tolist():
         patient_dict = {}
         patient_chunk = time_series.loc[time_series[grouping] == id, dynamic_features]
         patient_dict.update({grouping: id})
@@ -26,39 +24,32 @@ def flatten(time_series, dynamic_features, grouping, static_features, outcome_co
                     row_dictionary[x+'_'+str(timestep) ] = datum
 
             patient_dict.update(row_dictionary)
+
+        static_feature_values = time_series.loc[time_series[grouping] == id, static_features]
+        patient_dict.update(zip(static_features, static_feature_values.iloc[0]))
+
+        outcome_value = time_series.loc[time_series[grouping] == id, outcome_column]
+
+        patient_dict.update({outcome_column: outcome_value.iloc[0]})
         flat_df = flat_df.append(patient_dict, ignore_index=True)
-        if firstTime:
-            flat_df.columns = list(patient_dict.keys())
-            firstTime = False
-
-    sorted_columns = list(patient_dict.keys())
-    sorted_columns.remove((grouping))
-    sorted_columns = sorted(sorted_columns, key=lambda x : int(x.split("_")[1]))
-    sorted_columns.insert(0, grouping)
-
-    flat_df = flat_df.reindex(columns=sorted_columns)
-
-    column_list = static_features
-    column_list.insert(0,grouping)
-    column_list.extend(outcome_columns)
-
-    flat_df = pd.merge(flat_df, aggregated_df.loc[:,column_list], on= grouping, how='inner')
 
     flat_df.to_csv("flat.csv", index = False)
-    return flat_df
+    return flat_df, timesteps
 
-def smote(target_df, target_outcome, outcome_columns, grouping):
-
-    print("initial target df shape", target_df.shape)
+def smote(target_df, target_outcome, grouping):
     y = target_df[target_outcome]
-    target_df.drop(outcome_columns, axis=1, inplace=True)
-    ids = target_df[grouping]
-    target_df.drop(grouping, axis=1, inplace=True)
+    target_df.drop(target_outcome, axis=1, inplace=True)
+
+    target_df[grouping] = [float((x.partition('_')[2])) for x in target_df[grouping]]
+    #target_df.drop(grouping, axis=1, inplace=True)
     X = target_df
 
+    target_columns = target_df.columns
+    #target_columns = target_columns.insert(0, grouping)
+    target_columns= target_columns.insert(len(target_columns), target_outcome)
     kmeans_smote = KMeansSMOTE(
         kmeans_args={
-            'n_clusters' : 100
+            'n_clusters' : 30
         },
         smote_args={
             'k_neighbors' : 10
@@ -66,16 +57,35 @@ def smote(target_df, target_outcome, outcome_columns, grouping):
     )
     X_resampled, y_resampled = kmeans_smote.fit_sample(X, y)
     X_resampled = pd.DataFrame(X_resampled)
-    print(" printing y's length before dfing it", len(y_resampled))
     y_resampled = pd.DataFrame(y_resampled)
-    ids = pd.DataFrame(ids)
-    frames = [ids, X_resampled, y_resampled]
+    frames = [X_resampled, y_resampled]
+
     total_df = pd.concat(frames, axis=1)
+    total_df.columns  = target_columns
+    target_df[grouping] = ['p_'+str(x) for x in target_df[grouping]]
 
-    [print('Class {} has {} instances after oversampling'.format(label, count))
-     for label, count in zip(*np.unique(y_resampled, return_counts=True))]
+    return total_df
 
-    print(type(X_resampled))
-    print(" shapes: x, ", X_resampled.shape, "y: ", len(y_resampled), "total df: ", total_df.shape)
-    return X_resampled, y_resampled
+def unflatten(flat_df, grouping, static_features, outcome_column, timesteps):
+        smoted_timeseries = pd.DataFrame()
+        for patient in flat_df[grouping]:
+            patient_row = flat_df.loc[flat_df[grouping]==patient]
+            patient_row.columns = flat_df.columns
+            for step in range(0, timesteps):
+                matching_columns = [x for x in patient_row.columns if x.endswith('_'+str(step))]
+                dynamic_slot = pd.DataFrame(patient_row[matching_columns])
+                dynamic_slot.columns = [x.partition('_')[0] for x in list(dynamic_slot.columns) ]
+                dynamic_slot[grouping] = patient
+                static_slot = pd.DataFrame(patient_row[static_features])
+                static_slot.columns = static_features
+                static_slot[grouping] = patient
+                static_slot[outcome_column] = patient_row[outcome_column]
 
+                full_slot  = static_slot.merge(dynamic_slot, on=grouping)
+                full_slot[grouping] = patient
+
+                slot_dictionary = dict(zip((full_slot.columns).tolist(), (full_slot.values).tolist()[0]))
+                smoted_timeseries = smoted_timeseries.append(slot_dictionary, ignore_index=True)
+
+        smoted_timeseries.to_csv("smotedTimeseries.csv")
+        return smoted_timeseries
