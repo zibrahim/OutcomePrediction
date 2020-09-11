@@ -87,5 +87,4 @@ def unflatten(flat_df, grouping, static_features, outcome_column, timesteps):
                 slot_dictionary = dict(zip((full_slot.columns).tolist(), (full_slot.values).tolist()[0]))
                 smoted_timeseries = smoted_timeseries.append(slot_dictionary, ignore_index=True)
 
-        smoted_timeseries.to_csv("smotedTimeseries.csv")
         return smoted_timeseries
