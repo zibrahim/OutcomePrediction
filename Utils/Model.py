@@ -114,6 +114,7 @@ def generate_trajectory_timeseries(df, baseline_columns, static_columns, timeser
     return new_df
 
 def impute(df, impute_columns):
+
     imp = IterativeImputer(max_iter=10, random_state=0)
     imp.fit(df[impute_columns])
     df[impute_columns] = imp.transform(df[impute_columns])

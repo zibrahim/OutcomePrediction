@@ -8,6 +8,7 @@ def flatten(time_series, dynamic_features, grouping, static_features, outcome_co
     newdf.insert(0, grouping+'2', newdf[grouping])
     aggregated_df = newdf.groupby(grouping+'2').aggregate('first')
 
+
     timesteps = len(newdf)/len(aggregated_df)
     flat_df = pd.DataFrame()
     for id in aggregated_df[grouping].tolist():
@@ -49,7 +50,7 @@ def smote(target_df, target_outcome, grouping):
     target_columns= target_columns.insert(len(target_columns), target_outcome)
     kmeans_smote = KMeansSMOTE(
         kmeans_args={
-            'n_clusters' : 30
+            'n_clusters' : 5
         },
         smote_args={
             'k_neighbors' : 10
