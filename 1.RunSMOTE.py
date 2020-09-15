@@ -47,6 +47,8 @@ def main():
         flat_df, timesteps = flatten(new_series, dynamic_features, grouping,
                                      static_flat_columns, outcome)
 
+        flat_df.to_csv(timeseries_path+"NonSMOTEDFlatSeries/"+outcome+"FlatTimeSeries.csv", index=False)
+
         [print('Flat DF: Class {} has {} instances after oversampling'.format(label, count))
          for label, count in zip(*np.unique(flat_df.loc[:,outcome], return_counts=True))]
         timesteps = 18

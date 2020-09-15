@@ -80,14 +80,24 @@ def get_distribution ( y_vals ) :
     y_vals_sum = sum(y_distr.values())
     return [f'{y_distr[i] / y_vals_sum:.2%}' for i in range(np.max(y_vals) + 1)]
 
-def generate_balanced_arrays(X_train, y_train):
+
+def get_distribution_percentages ( y_vals ) :
+    y_distr = Counter(y_vals)
+    y_vals_sum = sum(y_distr.values())
+    return [(y_distr[i] / y_vals_sum) for i in range(np.max(y_vals) + 1)]
+
+def generate_balanced_arrays(df, x_features, outcome, grouping, no_groups):
+ df = df[:,not (df[grouping].isin(no_groups))]
+ y_test = (df[outcome]).to_numpy()
+ X_test = df[x_features].to_numpy()
+
  while True:
-  positive = np.where(y_train==1)[0].tolist()
-  negative = np.random.choice(np.where(y_train==0)[0].tolist(),size = len(positive), replace = False)
+  positive = np.where(y_test==1)[0].tolist()
+  negative = np.random.choice(np.where(y_test==0)[0].tolist(),size = len(positive), replace = False)
   balance = np.concatenate((positive, negative), axis=0)
   np.random.shuffle(balance)
-  input = X_train.iloc[balance, :]
-  target = y_train.iloc[balance]
+  input = X_test.iloc[balance, :]
+  target = y_test.iloc[balance]
   yield input, target
 
 def class_weights(y):

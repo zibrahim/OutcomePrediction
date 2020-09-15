@@ -1,0 +1,22 @@
+,Label 0,Label 1
+Entire set,90.29%,9.71%
+training set - fold 0,90.33%,9.67%
+testing set - fold 0,89.92%,10.08%
+training set - fold 1,90.33%,9.67%
+testing set - fold 1,89.92%,10.08%
+training set - fold 2,90.33%,9.67%
+testing set - fold 2,89.92%,10.08%
+training set - fold 3,90.26%,9.74%
+testing set - fold 3,90.55%,9.45%
+training set - fold 4,90.34%,9.66%
+testing set - fold 4,89.84%,10.16%
+training set - fold 5,90.26%,9.74%
+testing set - fold 5,90.55%,9.45%
+training set - fold 6,90.26%,9.74%
+testing set - fold 6,90.55%,9.45%
+training set - fold 7,90.26%,9.74%
+testing set - fold 7,90.55%,9.45%
+training set - fold 8,90.26%,9.74%
+testing set - fold 8,90.55%,9.45%
+training set - fold 9,90.26%,9.74%
+testing set - fold 9,90.55%,9.45%

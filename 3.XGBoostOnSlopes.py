@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 
 from Models.XGBoost.XGBoost import run_xgboost_classifier
-from Utils.Model import scale, stratified_group_k_fold, generate_trajectory_timeseries, impute
-from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
 
 
 def main():
@@ -31,6 +29,7 @@ def main():
         for index, row in time_series.iterrows():
             row_dictionary = {}
             row_dictionary.update({grouping: row[grouping]})
+            row_dictionary.update({outcome: row[outcome]})
             row_dictionary.update({'cluster_assignment': int(row['cluster_assignment'])})
             row_dictionary.update(zip(static_features, row[static_features]))
 
@@ -45,17 +44,18 @@ def main():
         slopes_df.to_csv('Run/Data/time_series_slopes_0_mort3D.csv', index=False)
 
         experiment_number = "1"
-        y = time_series[outcome]
-        x_columns = ((time_series.columns).tolist())
+        y = slopes_df[outcome]
+        x_columns = ((slopes_df.columns).tolist())
         x_columns.remove(grouping)
         x_columns.remove(outcome)
         print(x_columns)
 
 
-        X = time_series[x_columns]
+        X = slopes_df[x_columns]
         X.reset_index()
-        groups = np.array(time_series[grouping])
+        groups = np.array(slopes_df[grouping])
 
+        run_xgboost_classifier(X, y, outcome+experiment_number, groups, experiment_number)
         run_xgboost_classifier(X, y, outcome+experiment_number, groups, experiment_number)
 
 
