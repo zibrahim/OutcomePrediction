@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc
 import xgboost as xgb
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score, classification_report
-
+from sklearn.metrics import plot_confusion_matrix, confusion_matrix
 
 from Utils.Model import stratified_group_k_fold, get_distribution
 def run_xgboost_classifier(X,y, label, groups, experiment_number):
@@ -52,6 +52,7 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
         RecallWeighted =  recall_score(testing_y, y_pred_binary, average='weighted')
         Accuracy = accuracy_score(testing_y, y_pred_binary)
         ClassificationReport = classification_report(testing_y, y_pred_binary)
+        ConfusionMatrix = confusion_matrix(testing_y, y_pred_binary)
 
         fpr, tpr, thresholds = roc_curve(testing_y, y_pred_rt)
         tprs.append(np.interp(mean_fpr, fpr, tpr))
@@ -70,7 +71,7 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
             "Recall-Micro": RecallMicro,
             "Recall-Weighted": RecallWeighted,
             "Accuracy" : Accuracy,
-            "AUC": auc,
+            "AUC": roc_auc,
             "ClassificationReport": ClassificationReport
         }
 
@@ -111,6 +112,9 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
     plt.ylabel('True Positive Rate', fontsize=18)
     plt.title('XGBoost Cross-Validation ROC', fontsize=18)
     # plt.legend(loc="lower right", prop={'size' : 15})
+
+
+
 
     stats_path = "Run/Stats/"
     prediction_path = "Run/Prediction/"
