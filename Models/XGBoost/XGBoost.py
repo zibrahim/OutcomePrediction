@@ -112,24 +112,21 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
     plt.ylim([-0.01, 1.01])
     plt.xlabel('False Positive Rate', fontsize=18)
     plt.ylabel('True Positive Rate', fontsize=18)
-    plt.title('XGBoost Cross-Validation ROC', fontsize=18)
-    # plt.legend(loc="lower right", prop={'size' : 15})
-
-
-
+    plt.title(label, fontsize=18)
 
     stats_path = "Run/Stats/"
     prediction_path = "Run/Prediction/"
 
-    plt.savefig(prediction_path + "Experiment"+ experiment_number+ label + "ROC_XGBoost.pdf")
+    plt.savefig(prediction_path + experiment_number+ label + "ROC.pdf")
 
     stats_df.to_csv(stats_path + label+"XGBoost.csv", index=False)
 
     distr_df = pd.DataFrame(distrs, index=index, columns=[f'Label {l}' for l in range(np.max(y) + 1)])
-    distr_df.to_csv(stats_path + "Experiment"+experiment_number+"-K-Fold-Distributions.csv", index=True)
+    distr_df.to_csv(stats_path +experiment_number+"-KFDistributions.csv", index=True)
+
 
 def run_xgboost_different_datasets(time_series, non_smoted_time_series,
-                                   outcome, grouping, label, experiment_number ):
+                                   outcome, grouping, experiment_number):
     y = time_series[outcome]
     y = y.astype(int)
 
@@ -173,7 +170,6 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
             distrs_percents = [get_distribution_percentages((testing_pool[outcome]).astype(int))]
 
 
-            print(" DISTRIBUTIONS: ", distrs_percents)
             length_of_test_set = len(non_smoted_time_series)/10 #ZI Fix this, number of folds
 
             number_of_first_class = int(distrs_percents[0][0]* length_of_test_set)
@@ -189,9 +185,6 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
             testing_X.reset_index()
             testing_y = testing[outcome]
             testing_y = testing_y.astype(int)
-
-            print(" length of test set: ", length_of_test_set, "0's", number_of_first_class,  " 1's:", number_of_second_class)
-            print(" length of testing df: ", testing_X.shape, len(testing_y))
 
             # Train, predict and Plot
             xgbm.fit(testing_X, testing_y)
@@ -266,12 +259,12 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
     plt.ylim([-0.01, 1.01])
     plt.xlabel('False Positive Rate', fontsize=18)
     plt.ylabel('True Positive Rate', fontsize=18)
-    plt.title('XGBoost Cross-Validation ROC', fontsize=18)
+    plt.title(outcome+experiment_number, fontsize=18)
     # plt.legend(loc="lower right", prop={'size' : 15})
 
     stats_path = "Run/Stats/"
     prediction_path = "Run/Prediction/"
 
-    plt.savefig(prediction_path + "Experiment" + experiment_number + label + "ROC_XGBoost.pdf")
+    plt.savefig(prediction_path + outcome+experiment_number + "ROC.pdf")
 
-    stats_df.to_csv(stats_path + label + "XGBoost.csv", index=False)
+    stats_df.to_csv(stats_path + outcome+experiment_number  + "XGBoost.csv", index=False)

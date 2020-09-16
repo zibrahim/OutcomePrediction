@@ -10,7 +10,6 @@
 
 	},
 	"data": {
-		"filename": "/Users/babylon/Documents/Data/KCHData/ClusteredTimeSeries/TimeSeriesAggregatedClusteredDeltaTwoDays.csv",
 		"grouping": "PatientID",
 		"ordering": "Hour",
 
@@ -36,25 +35,17 @@
 			"Urea",
 			"WBC"
 		],
-		"baseline_columns": [
-					"AlbuminBaseline","CreatinineBaseline","CReactiveProteinBaseline",
-					"DiasBPBaseline", "FiO2Baseline", "HbBaseline",
-					"LymphocytesBaseline", "NeutrophilsBaseline", "NEWSBaseline",
-					"PLTBaseline", "PO2.FIO2Baseline", "SysBPBaseline",
-					 "UreaBaseline", "WBCBaseline"
-		],
 		"classification_outcome": [
-			"Mortality3Days",
 			"Mortality5Days",
 			"Mortality7Days",
 			"Mortality14Days",
 			"Mortality30Days",
-			"ITUAdmission3Days",
+			"Mortality50Days",
 			"ITUAdmission5Days",
 			"ITUAdmission7Days",
 			"ITUAdmission14Days",
-			"ITUAdmission30Days"
-
+			"ITUAdmission30Days",
+			"ITUAdmission50Days"
 		],
 		"regression_outcome": ["PO2/FIO2"],
 
