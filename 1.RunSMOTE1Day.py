@@ -31,10 +31,18 @@ def main():
         normalized_timeseries.insert(len(normalized_timeseries.columns), col, time_series[col])
 
     ##4. generate new features based on delta from baseline
+    distribution_df = pd.DataFrame()
 
     for outcome in outcome_columns:
-        new_series = normalized_timeseries.copy()
+        distribution_dict = {}
 
+        new_series = normalized_timeseries.copy()
+        distribution_dict.update({'outcome':outcome})
+
+        distribution_dict.update({'distribution':[('Class {} -  {} instances '.format(label, count))
+         for label, count in zip(*np.unique(time_series.loc[:, outcome], return_counts=True))]})
+
+        distribution_df = distribution_df.append(distribution_dict,ignore_index=True)
         [print('Original DF: Class {} has {} instances after oversampling'.format(label, count))
          for label, count in zip(*np.unique(time_series.loc[:, outcome], return_counts=True))]
 
@@ -69,5 +77,6 @@ def main():
          for label, count in zip(*np.unique(smoted_timeseries.loc[:,outcome], return_counts=True))]
 
         smoted_timeseries.to_csv(timeseries_path+"SMOTEDTimeSeries/"+outcome+"StackedTimeSeries1Day.csv", index=False)
+        distribution_df.to_csv("Run/Stats/Distribution"+outcome+".csv")
 if __name__ == '__main__':
     main()

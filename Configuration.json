@@ -2,12 +2,7 @@
 	"paths": {
 		"path":  "/Users/babylon/Documents/Covid/Data/",
 		"data_path" : "/Users/babylon/Documents/Data/KCHData/",
-		"stats_path":  "/Users/babylon/Documents/Data/KCHData/Stats/",
-		"clustered_timeseries_path": "/Users/babylon/Documents/Data/KCHData/ClusteredTimeSeries/",
-		"lstm_prediction_path": "/Users/babylon/Documents/Covid/Figures/Prediction/LSTM",
-		"lstm_stats_path":  "/Users/babylon/Documents/Data/KCHData/Stats/LSTM",
-		"lstm_model_path":  "/Users/babylon/Documents/Data/KCHData/Models/LSTM"
-
+		"stats_path":  "/Users/babylon/Documents/Data/KCHData/Stats/"
 	},
 	"data": {
 		"grouping": "PatientID",
@@ -47,15 +42,10 @@
 			"ITUAdmission30Days",
 			"ITUAdmission50Days"
 		],
-		"regression_outcome": ["PO2/FIO2"],
-
-		"sequence_length": 14,
-		"train_test_split": 0.85,
-		"normalise": true
+		"regression_outcome": ["PO2/FIO2"]
 	},
 	"training": {
-		"epochs": 10,
-		"batch_size": 18
+		"folds": 10
 	},
 	"model": {
 		"name": "lstm-binary-classifier",

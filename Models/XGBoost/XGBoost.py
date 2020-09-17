@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
 import xgboost as xgb
-from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score, classification_report
-from sklearn.metrics import plot_confusion_matrix, confusion_matrix
+from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score, accuracy_score,\
+    classification_report, auc, roc_curve, brier_score_loss, confusion_matrix
 
 from Utils.Model import stratified_group_k_fold, get_distribution, get_distribution_percentages
 
@@ -42,7 +41,7 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
         xgbm.fit(training_X, training_y)
         y_pred_rt = xgbm.predict_proba(testing_X)[:, 1]
 
-        y_pred_binary = (y_pred_rt > 0.5).astype('int32')
+        y_pred_binary = (y_pred_rt > 0.65).astype('int32')
         F1Macro = f1_score(testing_y, y_pred_binary, average='macro')
         F1Micro = f1_score(testing_y, y_pred_binary, average='micro')
         F1Weighted = f1_score(testing_y, y_pred_binary, average='weighted')
@@ -59,8 +58,8 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
         fpr, tpr, thresholds = roc_curve(testing_y, y_pred_rt)
         tprs.append(np.interp(mean_fpr, fpr, tpr))
         tprs[-1][0] = 0.0
-        roc_auc = auc(fpr, tpr)
-        aucs.append(roc_auc)
+        auc = roc_auc_score(fpr, tpr)
+        aucs.append(auc)
 
         performance_row = {
             "F1-Macro" : F1Macro,
@@ -73,7 +72,7 @@ def run_xgboost_classifier(X,y, label, groups, experiment_number):
             "Recall-Micro": RecallMicro,
             "Recall-Weighted": RecallWeighted,
             "Accuracy" : Accuracy,
-            "AUC": roc_auc,
+            "AUC": auc,
             "ClassificationReport": ClassificationReport
         }
 
@@ -153,6 +152,8 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
 
     tprs = []
     aucs = []
+
+    cms = np.empty((2, 2))
     mean_fpr = np.linspace(0, 1, 10) #CROSS VALIDATION CHANGE
     plt.figure(figsize=(10, 10))
 
@@ -169,16 +170,15 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
 
             distrs_percents = [get_distribution_percentages((testing_pool[outcome]).astype(int))]
 
-
-            length_of_test_set = len(non_smoted_time_series)/10 #ZI Fix this, number of folds
+            length_of_test_set =  len(non_smoted_time_series)/10 #ZI Fix this, number of folds
 
             number_of_first_class = int(distrs_percents[0][0]* length_of_test_set)
             number_of_second_class = int(distrs_percents[0][1] * length_of_test_set)
 
             first_half = testing_pool[testing_pool[outcome] == 0]
             second_half = testing_pool[testing_pool[outcome] ==1]
-            testing_0 = first_half.sample(n = number_of_first_class, random_state = 1)
-            testing_1 = second_half.sample(n = number_of_second_class, random_state = 1)
+            testing_0 = first_half.sample(n = number_of_first_class, random_state = 1, replace = False)
+            testing_1 = second_half.sample(n = number_of_second_class, random_state = 1, replace=False)
 
             testing =  testing_0.append(testing_1, ignore_index=True)
             testing_X = testing[x_columns]
@@ -190,7 +190,9 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
             xgbm.fit(testing_X, testing_y)
             y_pred_rt = xgbm.predict_proba(testing_X)[:, 1]
 
-            y_pred_binary = (y_pred_rt > 0.5).astype('int32')
+            y_pred_binary = (y_pred_rt > 0.65).astype('int32')
+            cm = confusion_matrix(testing_y, y_pred_binary, labels=xgbm.classes_)
+            cms += cm
             F1Macro = f1_score(testing_y, y_pred_binary, average='macro')
             F1Micro = f1_score(testing_y, y_pred_binary, average='micro')
             F1Weighted = f1_score(testing_y, y_pred_binary, average='weighted')
@@ -202,8 +204,8 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
             RecallWeighted = recall_score(testing_y, y_pred_binary, average='weighted')
             Accuracy = accuracy_score(testing_y, y_pred_binary)
             ClassificationReport = classification_report(testing_y, y_pred_binary)
-            ConfusionMatrix = confusion_matrix(testing_y, y_pred_binary)
-
+            BrierScoreProba = brier_score_loss(testing_y, y_pred_rt)
+            BrierScoreBinary = brier_score_loss(testing_y, y_pred_binary)
             fpr, tpr, thresholds = roc_curve(testing_y, y_pred_rt)
             tprs.append(np.interp(mean_fpr, fpr, tpr))
             tprs[-1][0] = 0.0
@@ -222,7 +224,9 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
                 "Recall-Weighted" : RecallWeighted,
                 "Accuracy" : Accuracy,
                 "AUC" : roc_auc,
-                "ClassificationReport" : ClassificationReport
+                "ClassificationReport" : ClassificationReport,
+                "BrierScoreProba": BrierScoreProba,
+                "BrierScoreBinary": BrierScoreBinary
             }
 
             stats_df = stats_df.append(performance_row, ignore_index=True)
@@ -267,4 +271,8 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
 
     plt.savefig(prediction_path + outcome+experiment_number + "ROC.pdf")
 
+    mean_cm =  np.mean(np.array(cms), axis=1)
+    plt.figure(figsize=(10, 10))
+    plt.plot(mean_cm)
+    plt.savefig(" confusionmatrtix.pdf")
     stats_df.to_csv(stats_path + outcome+experiment_number  + "XGBoost.csv", index=False)
