@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 
 import xgboost as xgb
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score, \
-    classification_report, auc, roc_curve, brier_score_loss, confusion_matrix, precision_recall_curve, \
-    average_precision_score
-
+    classification_report, auc, brier_score_loss, precision_recall_curve
 from Utils.Model import stratified_group_k_fold, get_distribution, get_distribution_percentages
 
 def run_xgboost_different_datasets(time_series, non_smoted_time_series,
@@ -117,7 +115,6 @@ def run_xgboost_different_datasets(time_series, non_smoted_time_series,
             prs.append(np.interp(mean_recall, precision, recall))
             pr_auc = auc(recall, precision)
             aucs.append(pr_auc)
-            #plt.plot(recall, precision, lw=3, alpha=0.5, label=None)
             i += 1
 
             performance_row = {
