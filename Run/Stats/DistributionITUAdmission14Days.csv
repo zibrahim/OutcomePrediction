@@ -1,0 +1,9 @@
+,distribution,outcome
+0,"['Class 0.0 -  13656 instances ', 'Class 1.0 -  1668 instances ']",Mortality5Days
+1,"['Class 0.0 -  13080 instances ', 'Class 1.0 -  2244 instances ']",Mortality7Days
+2,"['Class 0.0 -  12156 instances ', 'Class 1.0 -  3168 instances ']",Mortality14Days
+3,"['Class 0.0 -  11304 instances ', 'Class 1.0 -  4020 instances ']",Mortality30Days
+4,"['Class 0.0 -  11256 instances ', 'Class 1.0 -  4068 instances ']",Mortality50Days
+5,"['Class 0.0 -  14064 instances ', 'Class 1.0 -  1260 instances ']",ITUAdmission5Days
+6,"['Class 0 -  13980 instances ', 'Class 1 -  1344 instances ']",ITUAdmission7Days
+7,"['Class 0 -  13848 instances ', 'Class 1 -  1476 instances ']",ITUAdmission14Days
