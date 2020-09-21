@@ -7,6 +7,7 @@ from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_sco
 
 from Utils.Model import stratified_group_k_fold, get_distribution, get_distribution_percentages
 
+
 def run_xgboost_different_datasets(time_series, non_smoted_time_series,
                                    outcome, grouping, experiment_number):
     y = time_series[outcome]

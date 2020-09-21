@@ -81,6 +81,10 @@ def get_distribution ( y_vals ) :
     return [f'{y_distr[i] / y_vals_sum:.2%}' for i in range(np.max(y_vals) + 1)]
 
 
+def get_distribution_scalars( y_vals ) :
+    y_distr = Counter(y_vals)
+    return [int(y_distr[i]) for i in range(np.max(y_vals) + 1)]
+
 def get_distribution_percentages ( y_vals ) :
     y_distr = Counter(y_vals)
     y_vals_sum = sum(y_distr.values())
